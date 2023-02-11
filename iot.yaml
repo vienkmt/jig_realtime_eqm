@@ -1,0 +1,58 @@
+esphome:
+  name: iot
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+http_request:
+  useragent: esphome/device
+  timeout: 10s
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "rHNQL6v9Td4bQhbIpWwCt+0wKyr2YRP0CIBL86U4mUE="
+
+ota:
+  password: "a4cc2beb753e18ae837a5f9d1079d526"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Iot Fallback Hotspot"
+    password: "sJfQie2VdrO1"
+
+captive_portal:
+binary_sensor:
+  - platform: gpio
+    pin: 15
+    name: "Jig 1"
+    device_class: window
+    id: jig1
+    on_state:
+      then:
+        - http_request.get:
+            url: !lambda |-
+              if (id(jig1).state)
+                return "http://hev.phonglinh.com/iot/get.php?id=1&value=0";
+              else
+                return "http://hev.phonglinh.com/iot/get.php?id=1&value=1";
+
+  - platform: gpio
+    pin: 4
+    name: "Jig 2"
+    id: jig2
+    on_state:
+      then:
+        - http_request.get:
+            url: !lambda |-
+              if (id(jig2).state)
+                return "http://hev.phonglinh.com/iot/get.php?id=2&value=0";
+              else
+                return "http://hev.phonglinh.com/iot/get.php?id=2&value=1";
